@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.sistemacoleta.entity.Descarte;
@@ -66,4 +67,24 @@ public class DescarteController {
 			return ResponseEntity.notFound().build();
 		}
 	}
+	
+    @GetMapping("/listarDescartesMaisRecentes")
+    public ResponseEntity<List<Descarte>> listarDescartesMaisRecentes() {
+        List<Descarte> descartes = service.listarDescartesMaisRecentes();
+        if(descartes != null) {
+        	return ResponseEntity.ok(descartes);
+        } else {
+        	return ResponseEntity.notFound().build();
+        }  
+    }
+    
+    @GetMapping("/listarDescartesMaisAntigas")
+    public ResponseEntity<List<Descarte>> listarDescartesMaisAntigas() {
+        List<Descarte> descartes = service.listarDescartesMaisAntigas();
+        if(descartes != null) {
+        	return ResponseEntity.ok(descartes);
+        } else {
+        	return ResponseEntity.notFound().build();
+        }
+    }
 }

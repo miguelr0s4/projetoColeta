@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.senac.sistemacoleta.entity.Descarte;
 import com.senac.sistemacoleta.entity.DescarteMaterial;
 import com.senac.sistemacoleta.service.DescarteMaterialService;
 
@@ -56,5 +58,15 @@ public class DescarteMaterialController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         boolean deleted = service.delete(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+    
+    @GetMapping("/listarDescartesPorQuantidade")	
+    public ResponseEntity<List<DescarteMaterial>> listarDescartesPorQuantidade(@RequestParam Double quantidade) {
+        List<DescarteMaterial> descartes = service.listarDescartesPorQuantidade(quantidade);
+        if(descartes != null) {
+        	return ResponseEntity.ok(descartes);
+        } else {
+        	return ResponseEntity.notFound().build();
+        }
     }
 }

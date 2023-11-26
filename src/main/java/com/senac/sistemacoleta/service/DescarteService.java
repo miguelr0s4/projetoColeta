@@ -1,11 +1,15 @@
 package com.senac.sistemacoleta.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.senac.sistemacoleta.entity.Descarte;
 import com.senac.sistemacoleta.repository.DescarteRepository;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -54,4 +58,14 @@ public class DescarteService {
 			return false;
 		}
 	}
+	
+    public List<Descarte> listarDescartesMaisRecentes() {
+        return repository.findByTempoDisponivelGreaterThan(LocalDateTime.now());
+    }
+    
+    public List<Descarte> listarDescartesMaisAntigas() {
+        return repository.findByTempoDisponivelLessThan(LocalDateTime.now());
+    }
+    
+
 }

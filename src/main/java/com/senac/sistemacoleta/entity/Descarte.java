@@ -38,7 +38,7 @@ public class Descarte {
     private LocalDateTime tempoDisponivel;
 
     @OneToOne
-    @JoinColumn(name = "descartardor_id")
+    @JoinColumn(name = "descartador_id")
     private Descartador descartador;
     
     @OneToOne

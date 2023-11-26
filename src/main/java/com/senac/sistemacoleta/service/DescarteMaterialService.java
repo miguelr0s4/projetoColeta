@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.senac.sistemacoleta.entity.Descarte;
 import com.senac.sistemacoleta.entity.DescarteMaterial;
 import com.senac.sistemacoleta.repository.DescarteMaterialRepository;
 
@@ -55,5 +56,9 @@ public class DescarteMaterialService {
         Optional<DescarteMaterial> descarteMaterialOptional = findById(id);
         descarteMaterialOptional.ifPresent(descarteMaterial -> repository.delete(descarteMaterial));
         return descarteMaterialOptional.isPresent();
+    }
+    
+    public List<DescarteMaterial> listarDescartesPorQuantidade(Double quantidade) {
+        return repository.findByQuantidadeGreaterThan(quantidade);
     }
 }
