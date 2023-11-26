@@ -1,8 +1,10 @@
 package com.senac.sistemacoleta.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,45 +15,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.sistemacoleta.entity.DescarteMaterial;
-import com.senac.sistemacoleta.repository.DescarteMaterialRepository;
+import com.senac.sistemacoleta.service.DescarteMaterialService;
 
 @RestController
-@RequestMapping("/descarteMateriais")
+@RequestMapping("/descarte-materiais")
 public class DescarteMaterialController {
 
-	@Autowired
-	private DescarteMaterialRepository repository;
-	
-	@GetMapping
-	private List<DescarteMaterial> findAll(){
-		return repository.findAll();
-	}
-	
-	@PostMapping("/{id}")
-	private DescarteMaterial insert(@RequestBody DescarteMaterial descarteMaterial) {
-		return repository.save(descarteMaterial);
-	}
-	
-	@PutMapping("/{id}")
-	public DescarteMaterial replace(@RequestBody DescarteMaterial newDescarteMaterial, @PathVariable Long id) {
-		return repository.findById(id).map(descarteMaterial -> {
-			descarteMaterial.setAcordoColeta(newDescarteMaterial.getAcordoColeta());
-			descarteMaterial.setDescarte(descarteMaterial.getDescarte());
-			descarteMaterial.setImposto(descarteMaterial.getImposto());
-			descarteMaterial.setPreco(descarteMaterial.getPreco());
-			descarteMaterial.setQuantidade(descarteMaterial.getQuantidade());			
-			descarteMaterial.setStatus(descarteMaterial.getStatus());			
-			descarteMaterial.setStatusColeta(descarteMaterial.getStatusColeta());			
-			return repository.save(descarteMaterial);
-		})
-		.orElseGet(() -> {
-			newDescarteMaterial.setId(id);
-			return repository.save(newDescarteMaterial);
-		});
-	}
-	
-	@DeleteMapping("/{id}")
-	private void delete(@PathVariable Long id) {
-		repository.deleteById(id);
-	}
+    @Autowired
+    private DescarteMaterialService service;
+    
+    @GetMapping("/list")
+    public ResponseEntity<List<DescarteMaterial>> findAll() {
+        List<DescarteMaterial> descarteMateriais = service.listAll();
+        return ResponseEntity.ok(descarteMateriais);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<DescarteMaterial> getDescarteMaterial(@PathVariable Long id) {
+        Optional<DescarteMaterial> descarteMaterial = service.findById(id);
+        if(descarteMaterial.isPresent()) {
+	    	return ResponseEntity.ok(descarteMaterial.get());
+	    } else {
+	    	return ResponseEntity.notFound().build();
+	    }
+    }
+    
+    @PostMapping
+    public ResponseEntity<DescarteMaterial> insert(@RequestBody DescarteMaterial newDescarteMaterial) {
+        DescarteMaterial descarteMaterial = service.save(newDescarteMaterial);
+        return ResponseEntity.ok(descarteMaterial);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<DescarteMaterial> replace(@RequestBody DescarteMaterial newDescarteMaterial, @PathVariable Long id) {
+        DescarteMaterial descarteMaterial = service.update(newDescarteMaterial, id);
+        return descarteMaterial != null ? ResponseEntity.ok(descarteMaterial) : ResponseEntity.notFound().build();
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        boolean deleted = service.delete(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
 }

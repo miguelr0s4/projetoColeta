@@ -1,7 +1,10 @@
 package com.senac.sistemacoleta.controller;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,41 +13,44 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.senac.sistemacoleta.entity.RotaTrajeto;
-import com.senac.sistemacoleta.repository.RotaTrajetoRepository;
+import com.senac.sistemacoleta.service.RotaTrajetoService;
 
 @RestController
-@RequestMapping(value = "/rotaTrajetos")
+@RequestMapping("/rota-trajetos")
 public class RotaTrajetoController {
 
-	@Autowired
-	private RotaTrajetoRepository repository;
+    @Autowired
+    private RotaTrajetoService service;
 
-	@GetMapping
-	public List<RotaTrajeto> findAll(){
-		return repository.findAll();
-	}
+    @GetMapping("/list")
+    public ResponseEntity<List<RotaTrajeto>> findAll() {
+        List<RotaTrajeto> rotaTrajetos = service.listAll();
+        return ResponseEntity.ok(rotaTrajetos);
+    }
 
-	@PostMapping
-	public RotaTrajeto insert(@RequestBody RotaTrajeto rotaTrajeto) {
-		RotaTrajeto result = repository.save(rotaTrajeto);
-		return result;
-	}
-	
-	@PutMapping("/{id}")
-	public RotaTrajeto update(@RequestBody RotaTrajeto newRotaTrajeto, @PathVariable Long id) {
-		return repository.findById(id).map(rotaTrajeto -> {
-			rotaTrajeto.setAcordo(newRotaTrajeto.getAcordo());
-			return rotaTrajeto;
-		})
-		.orElseGet(() -> {
-			newRotaTrajeto.setId(id);
-			return repository.save(newRotaTrajeto);
-		});
-	}
-	
-	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		repository.deleteById(id);
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<RotaTrajeto> getRotaTrajeto(@PathVariable Long id) {
+        Optional<RotaTrajeto> rotaTrajeto = service.findById(id);
+        return rotaTrajeto.isPresent() ? ResponseEntity.ok(rotaTrajeto.get()) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<RotaTrajeto> insert(@RequestBody RotaTrajeto newRotaTrajeto) {
+        RotaTrajeto rotaTrajeto = service.save(newRotaTrajeto);
+        return ResponseEntity.ok(rotaTrajeto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RotaTrajeto> replace(@RequestBody RotaTrajeto newRotaTrajeto, @PathVariable Long id) {
+        RotaTrajeto rotaTrajeto = service.update(newRotaTrajeto, id);
+        return rotaTrajeto != null ? ResponseEntity.ok(rotaTrajeto) : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        boolean deleted = service.delete(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
 }

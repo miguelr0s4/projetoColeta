@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,46 +16,54 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.sistemacoleta.entity.Descarte;
-import com.senac.sistemacoleta.repository.DescarteRepository;
+import com.senac.sistemacoleta.service.DescarteService;
 
 @RestController
 @RequestMapping("/descartes")
 public class DescarteController {
 
 	@Autowired
-	private DescarteRepository repository;
+	private DescarteService service;
 	
-	@GetMapping
-	public List<Descarte> findAll(){
-		return repository.findAll();
+	@GetMapping("/list")
+	public ResponseEntity<List<Descarte>> findAll(){
+		List<Descarte> descartes = service.listAll();
+		return ResponseEntity.ok(descartes);
 	}
 	
 	@GetMapping("/{id}")
-	public Optional<Descarte> getDescarte(@PathVariable Long id) {
-	    Optional<Descarte> descarte = repository.findById(id);
-	    return descarte;
+	public ResponseEntity<Descarte> getDescarte(@PathVariable Long id) {
+	    Optional<Descarte> descarte = service.findById(id);
+	    if(descarte.isPresent()) {
+	    	return ResponseEntity.ok(descarte.get());
+	    } else {
+	    	return ResponseEntity.notFound().build();
+	    }
 	}
 	
 	@PostMapping
-	public Descarte insert(@RequestBody Descarte descarte) {
-		return repository.save(descarte);
+	public ResponseEntity<Descarte> insert(@RequestBody Descarte newDescarte) {
+		Descarte descarte = service.save(newDescarte);
+		if(descarte != null) {
+			return ResponseEntity.ok(descarte);
+		} else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	@PutMapping("/{id}")
-	public Descarte replace(@RequestBody Descarte newDescarte, @PathVariable Long id) {
-		return repository.findById(id).map(descarte -> {
-			descarte.setData(newDescarte.getData());
-			
-			return repository.save(descarte);
-		})
-		.orElseGet(() -> {
-			newDescarte.setId(id);
-			return repository.save(newDescarte);
-		});
+	public ResponseEntity<Descarte> replace(@RequestBody Descarte newDescarte, @PathVariable Long id) {
+		Descarte descarte = service.update(newDescarte, id);
+		return descarte != null ? ResponseEntity.ok(descarte) : ResponseEntity.notFound().build();
 	}
 	
 	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
-		repository.deleteById(id);
+	public ResponseEntity<Descarte> delete(@PathVariable Long id) {
+		Boolean resp = service.delete(id);
+		if(resp) {
+			return ResponseEntity.noContent().build();
+		} else {
+			return ResponseEntity.notFound().build();
+		}
 	}
 }
